@@ -1,10 +1,11 @@
 (ns yank.client
-    (:require [enfocus.core :as ef]
+    (:require [ajax.core :refer [GET POST]]
+              [clojure.browser.repl :as repl]
+              [enfocus.core :as ef]
               [enfocus.effects :as effects]
               [enfocus.events :as events]
               [enfocus.bind :as bind]
-              [ajax.core :refer [GET POST]]
-              [clojure.browser.repl :as repl])
+              [fresnel.lenses :refer [Lens]])
     (:require-macros [enfocus.macros :as em])
     (:use-macros [enfocus.macros :only [deftemplate defsnippet defaction]]))
 
@@ -27,22 +28,22 @@
 (def app (atom {:code ""
                 :state :initial ; :checked :broken :loading
                 :advice nil
-                :active-line nil}
+                :active-line nil
+                :timer 0}
                :validator (fn [{:keys [state advice]}]
                             (or (#{:checked :loading} state)
                                 (nil? advice)))))
-
-(def timer (atom 0))
 (def tick-interval 200)
-
 (def code-mirror nil)
 
 ;;************************************************
 ;; Utils
 ;;************************************************
-(defn start-timer []
-  (let [inc-timer #(swap! timer inc)]
-    (js/setInterval inc-timer tick-interval)))
+
+(defn sub-map-lens [kys]
+  (reify Lens
+    (-fetch [this value] (select-keys value kys))
+    (-putback [this value subvalue] (merge value subvalue))))
 
 (defn add-line-class [line class]
   (.addLineClass code-mirror line "text" class))
@@ -52,17 +53,6 @@
 
 (defn swapp! [& args]
   (swap! app #(merge % (apply hash-map args))))
-
-(defn format-one [{:keys [expr alt line]}]
-  (str "line " line ": consider using\n" (str "  " alt)
-       "\ninstead of\n" (str "  " expr)))
-
-(defn format-advice [state advice]
-  (cond
-   (= state :initial) "Paste some clojure code"
-   (= state :broken) "Failed to check the code =(\nAre parenthesis balanced?"
-   (empty? advice) "Looks OK to me"
-   :default (clojure.string/join "\n\n" (map format-one advice))))
 
 ;;************************************************
 ;; Retrieving data from dom
@@ -97,10 +87,10 @@
          ".result" (transform "text-info")
          ".loader" (transform "invisible"))))
 
-(defn render-loading [node time]
+(defn render-loader [node timer]
   (let [steps (mapv #(clojure.string/replace % " " "&nbsp;")
                    ["..." " .." "  ." "   " ".  " ".. "])
-        dots (nth steps (mod time (count steps)))]
+        dots (nth steps (mod timer (count steps)))]
     (ef/at node
            ".loader" (ef/content (str "Loading" dots)))))
 
@@ -109,8 +99,9 @@
 ;;************************************************
 
 (defaction home []
-  ".result-wrapper" (bind/bind-view timer render-loading)
-  ".result-wrapper" (bind/bind-view app render-result))
+  ".result-wrapper" (bind/bind-view app render-result
+                                    (sub-map-lens [:state :advice]))
+  ".loader-wrapper" (bind/bind-view app render-loader [:timer]))
 
 (defn activate-editor []
   (let [ta (by-class "bin")
@@ -119,6 +110,10 @@
                                                            :lineNumbers true
                                                            :autofocus true}))
     (.on code-mirror "change" update-code)))
+
+(defn start-timer []
+  (let [inc-timer (fn [] (swap! app #(update-in % [:timer] inc)))]
+    (js/setInterval inc-timer tick-interval)))
 
 ;;************************************************
 ;; talking to server
@@ -161,12 +156,12 @@
                [:advice advice-change]
                [:active-line active-line-change]])
 
-(defn wather [key ref old new]
+(defn watcher [key ref old new]
   (doseq [[key handler] handlers
           :let [o (key old)
                 n (key new)]]
     (when (not= o n) (handler o n))))
-(add-watch app :watch-change wather)
+(add-watch app :watch-change watcher)
 
 ;;************************************************
 ;; onload
