@@ -19,6 +19,12 @@ body {
 .footer-text {
     line-height: 30px;
 }
+.container{
+    max-width: 1000px;
+}
+.about  {
+    
+}
 .CodeMirror {
     border: solid 1px;
 }

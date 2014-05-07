@@ -24,12 +24,14 @@
 ;;************************************************
 ;; State
 ;;************************************************
+(def initial-state
+  {:code ""
+   :state :initial ; :checked :broken :loading
+   :advice nil
+   :active-line nil
+   :timer 0})
 
-(def app (atom {:code ""
-                :state :initial ; :checked :broken :loading
-                :advice nil
-                :active-line nil
-                :timer 0}
+(def app (atom initial-state
                :validator (fn [{:keys [state advice]}]
                             (or (#{:checked :loading} state)
                                 (nil? advice)))))
@@ -51,11 +53,16 @@
 (defn by-class [class]
   (first (.getElementsByClassName js/document class)))
 
+(defn add-class-when [cond class]
+  (if cond
+    (ef/add-class class)
+    (ef/remove-class class)))
+
 (defn add-line-class [line class]
-  (.addLineClass code-mirror line "text" class))
+  (.addLineClass code-mirror line "background" class))
 
 (defn remove-line-class [line class]
-  (.removeLineClass code-mirror line "text" class))
+  (.removeLineClass code-mirror line "background" class))
 
 (def example "(if (some test)\n  (some action)\n  nil)")
 (defn show-example []
@@ -73,25 +80,30 @@
   ".expr" (ef/content (str "  " expr)))
 
 (defn render-result [node {:keys [state advice]}]
-  (let [transform (if (= state :loading) ef/remove-class ef/add-class)]
   (ef/at node
          ".advice"
          (ef/content
           (cond
-           (= state :initial) "Paste some clojure code"
+           (= state :initial) ""
            (= state :broken) "Failed to check the code =(\nAre parenthesis balanced?"
            (empty? advice) "Looks OK to me"
            :default (map advice-snip advice)))
+         ".result" (ef/do->
+                    (add-class-when (not= state :loading) "text-info")
+                    (add-class-when (= state :initial) "hidden"))))
 
-         ".result" (transform "text-info")
-         ".loader" (transform "invisible"))))
-
-(defn render-loader [node timer]
+(defn render-loader [node {:keys [state timer]}]
   (let [steps (mapv #(clojure.string/replace % " " "&nbsp;")
                    ["..." " .." "  ." "   " ".  " ".. "])
         dots (nth steps (mod timer (count steps)))]
     (ef/at node
-           ".loader" (ef/content (str "Loading" dots)))))
+           ".loader" (ef/do->
+                      (ef/content (str "Loading" dots))
+                      (add-class-when (not= state :loading) "invisible")))))
+
+(defn render-about [node state]
+  (ef/at node
+         ".about" (add-class-when (not= state :initial) "hidden")))
 
 ;;************************************************
 ;; actions/navigation
@@ -100,7 +112,9 @@
 (defaction home []
   ".result-wrapper" (bind/bind-view app render-result
                                     (sub-map-lens [:state :advice]))
-  ".loader-wrapper" (bind/bind-view app render-loader [:timer])
+  ".loader-wrapper" (bind/bind-view app render-loader
+                                    (sub-map-lens [:state :timer]))
+  ".about-wrapper" (bind/bind-view app render-about [:state])
   ".example-link" (events/listen :click (fn [] (show-example) false)))
 
 (defn activate-editor []
