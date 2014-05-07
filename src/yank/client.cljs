@@ -45,27 +45,26 @@
     (-fetch [this value] (select-keys value kys))
     (-putback [this value subvalue] (merge value subvalue))))
 
+(defn swapp! [& args]
+  (swap! app #(merge % (apply hash-map args))))
+
+(defn by-class [class]
+  (first (.getElementsByClassName js/document class)))
+
 (defn add-line-class [line class]
   (.addLineClass code-mirror line "text" class))
 
 (defn remove-line-class [line class]
   (.removeLineClass code-mirror line "text" class))
 
-(defn swapp! [& args]
-  (swap! app #(merge % (apply hash-map args))))
-
-;;************************************************
-;; Retrieving data from dom
-;;************************************************
-
-(defn by-class [class]
-  (first (.getElementsByClassName js/document class)))
+(def example "(if (some test)\n  (some action)\n  nil)")
+(defn show-example []
+  (.setValue code-mirror example))
 
 ;;************************************************
 ;; snippets and templates
 ;;************************************************
 
-(defsnippet home-snip "index.html" "#stage" [])
 (defsnippet advice-snip "index.html" ".advice" [{:keys [expr alt line]} advice]
   ".line-link" (ef/do->
                 (ef/content (str "line " line ":"))
@@ -101,7 +100,8 @@
 (defaction home []
   ".result-wrapper" (bind/bind-view app render-result
                                     (sub-map-lens [:state :advice]))
-  ".loader-wrapper" (bind/bind-view app render-loader [:timer]))
+  ".loader-wrapper" (bind/bind-view app render-loader [:timer])
+  ".example-link" (events/listen :click (fn [] (show-example) false)))
 
 (defn activate-editor []
   (let [ta (by-class "bin")
