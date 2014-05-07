@@ -58,15 +58,15 @@
     (ef/add-class class)
     (ef/remove-class class)))
 
-(defn add-line-class [line class]
-  (.addLineClass code-mirror line "background" class))
+(defn add-line-class [line target class]
+  (.addLineClass code-mirror line (str target) class))
 
-(defn remove-line-class [line class]
-  (.removeLineClass code-mirror line "background" class))
+(defn remove-line-class [line target class]
+  (.removeLineClass code-mirror line (str target) class))
 
 (def example "(if (some test)\n  (some action)\n  nil)")
 (defn show-example []
-  (.setValue code-mirror example))
+  (swapp! :code example))
 
 ;;************************************************
 ;; snippets and templates
@@ -115,7 +115,8 @@
   ".loader-wrapper" (bind/bind-view app render-loader
                                     (sub-map-lens [:state :timer]))
   ".about-wrapper" (bind/bind-view app render-about [:state])
-  ".example-link" (events/listen :click (fn [] (show-example) false)))
+  ".example-link" (events/listen :click (fn [] (show-example) false))
+  ".brand-link" (events/listen :click (fn [] (reset! app initial-state) false)))
 
 (defn activate-editor []
   (let [ta (by-class "bin")
@@ -155,19 +156,22 @@
 
 (defn code-change [old new]
   (swapp! :active-line nil)
-  (try-create-bin-deb new))
+  (when-not (clojure.string/blank? new)
+    (try-create-bin-deb new))
+  (when (not= new (.getValue code-mirror))
+    (.setValue code-mirror new)))
 
 (defn advice-change [old new]
   (doseq [{line :line} old]
-    (remove-line-class (dec line) "line-advice"))
+    (remove-line-class (dec line) :text "line-advice"))
   (doseq [{line :line} new]
-    (add-line-class (dec line) "line-advice")))
+    (add-line-class (dec line) :text "line-advice")))
 
 (defn active-line-change [old new]
   (when old
-    (remove-line-class old "line-active"))
+    (remove-line-class old :background "line-active"))
   (when new
-    (add-line-class new "line-active")
+    (add-line-class new :background "line-active")
     (.. code-mirror (getDoc) (setCursor new))))
 
 (def handlers [[:code code-change]
