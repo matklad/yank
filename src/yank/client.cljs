@@ -135,6 +135,10 @@
 
 (def try-create-bin-deb (.debounce js/_ try-create-bin 300))
 
+;;************************************************
+;; watchers
+;;************************************************
+
 (defn code-change [old new]
   (swapp! :active-line nil)
   (try-create-bin-deb new))
