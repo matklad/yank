@@ -1,1 +1,0 @@
-{:external-resources "../resources/"}

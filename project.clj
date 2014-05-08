@@ -4,7 +4,6 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [compojure "1.1.6"]
                  [cljs-ajax "0.2.3"]
-                 [sonian/carica "1.1.0" :exclusions [[cheshire]]]
                  [ring/ring-core "1.1.8"]
                  [ring/ring-jetty-adapter "1.1.8"]
                  [fogus/ring-edn "0.2.0"]
