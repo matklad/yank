@@ -4,6 +4,7 @@
         compojure.handler
         carica.core
         ring.middleware.edn
+        ring.middleware.logger
         [kibit.check :only [check-reader]]))
 
 (defn check [code]
@@ -39,4 +40,5 @@
 (def app (-> compojure-handler
              site
              wrap-edn-params
+             wrap-with-plaintext-logger
              wrap-index))

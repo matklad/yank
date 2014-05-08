@@ -9,7 +9,8 @@
                  [ring/ring-jetty-adapter "1.1.8"]
                  [fogus/ring-edn "0.2.0"]
                  [enfocus "2.1.0-SNAPSHOT"]
-                 [jonase/kibit "0.0.9-SNAPSHOT"]]
+                 [jonase/kibit "0.0.9-SNAPSHOT"]
+                 [ring.middleware.logger "0.4.0"]]
   :plugins [[lein-cljsbuild "0.3.2"]
             [lein-ring "0.8.3"]]
   :cljsbuild {:builds [{:source-paths ["src"],
