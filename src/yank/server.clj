@@ -23,8 +23,13 @@
 (defn new-bin [code]
   (response (check code)))
 
+(def index
+  (resp/content-type
+   (resp/resource-response "index.html" {:root "public"})
+   "text/html"))
+
 (defroutes compojure-handler
-  (GET "/" [] (resp/resource-response "index.html" {:root "public"}))
+  (GET "/" [] index)
   (POST "/bin" [code] (new-bin code))
   (route/resources "/")
   (route/not-found "Not found!"))
