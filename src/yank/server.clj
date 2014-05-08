@@ -24,7 +24,7 @@
   (response (check code)))
 
 (defroutes compojure-handler
-  (GET "/" [] (resp/file-response "index.html" {:root "public"}))
+  (GET "/" [] (resp/resource-response "index.html" {:root "public"}))
   (POST "/bin" [code] (new-bin code))
   (route/resources "/")
   (route/not-found "Not found!"))
