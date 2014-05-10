@@ -68,7 +68,7 @@
 
 (defsnippet advice-snip "index.html" ".advice" [{:keys [expr alt line]} advice]
   ".line-link" (ef/do->
-                (ef/content (str "line " line ":"))
+                (ef/content (str "line " line))
                 (events/listen :click #(swapp! :active-line (dec line))))
   ".alt" (ef/content (str "  " alt))
   ".expr" (ef/content (str "  " expr)))
@@ -149,8 +149,7 @@
 
 (defn code-change [old new]
   (swapp! :active-line nil)
-  (when-not (clojure.string/blank? new)
-    (try-create-bin-deb new))
+  (try-create-bin-deb new)
   (when (not= new (.getValue code-mirror))
     (.setValue code-mirror new)))
 
