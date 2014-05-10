@@ -7,6 +7,7 @@ html {
 body {
     /* Margin bottom by footer height */
     margin-bottom: 30px;
+    background-image: url("/img/crossword.png");
 }
 #footer {
     position: absolute;
@@ -22,17 +23,18 @@ body {
 .container{
     max-width: 1000px;
 }
-.about  {
-    
-}
 .CodeMirror {
-    border: solid 1px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 .CodeMirror .line-advice {
     text-decoration: underline;
 }
 .CodeMirror .line-active{
     background-color: #fcf8e3;
+}
+.result {
+    background-color: #fff;
 }
 .line-link {
     text-decoration: underline;
