@@ -12,8 +12,20 @@
                  [ring.middleware.logger "0.4.0"]]
   :plugins [[lein-cljsbuild "0.3.2"]
             [lein-ring "0.8.3"]]
-  :cljsbuild {:builds [{:source-paths ["src"],
+  :cljsbuild {
+              :builds {:dev
+                       {:source-paths ["src"],
                         :compiler {:output-to "resources/public/js/main.js"
                                    :externs ["resources/externs/underscore.js"
-                                             "resources/externs/codemirror.js"]}}]}
+                                             "resources/externs/codemirror.js"]
+                                   :optimizations :whitespace
+                                   :pretty-print true}}
+
+                       :prod
+                       {:source-paths ["src"],
+                        :compiler {:output-to "resources/public/js/main.min.js"
+                                   :externs ["resources/externs/underscore.js"
+                                             "resources/externs/codemirror.js"]
+                                   :optimizations :advanced
+                                   :pretty-print false}}}}
   :ring {:handler yank.server/app})

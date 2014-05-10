@@ -3,6 +3,9 @@ pom.xml
 /lib/
 /classes/
 .lein-deps-sum
+.lein-repl-history
+/logs/
 /target/
 resources/public/cljs/
 resources/public/js/main.js
+deploy.sh

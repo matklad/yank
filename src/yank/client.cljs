@@ -15,12 +15,6 @@
 (defn log [arg]
   (.log js/console arg))
 
-(def dev-mode true)
-
-(defn repl-connect []
-  (when dev-mode
-    (repl/connect "http://localhost:9000/repl")))
-
 ;;************************************************
 ;; State
 ;;************************************************
@@ -145,7 +139,6 @@
          :handler (fn [advice]
                     (let [state (if advice :checked :broken)]
                       (swapp! :state state :advice advice)))
-         ; TODO: real error handler
          :error-handler handle-error}))
 
 (def try-create-bin-deb (.debounce js/_ try-create-bin 300))
