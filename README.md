@@ -1,18 +1,7 @@
 # yank
 
-A website written with Enfocus in ClojureScript.
+https://github.com/matklad/yank
 
-## Usage
+http://yank-matklad.rhcloud.com
 
-```bash
-lein cljsbuild once
-lein ring server
-```
-
-## License
-
-Copyright (C) 2012 FIXME
-
-Distributed under the Eclipse Public License, the same as Clojure.
-
-
+A clojure's [kibit](https://github.com/jonase/kibit) put online. 
